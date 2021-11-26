@@ -5,7 +5,7 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 import './ScreenA.css'
 const ScreenA = () => {
-    const [results, setResults] = useState([]);
+    const [results, setResults] = useState([1, 2, 3, 4, 5]);
     const { acceptedFiles, getRootProps, getInputProps } = useDropzone();
     const [calcTitle, setCalcTitle] = useState('');
     const [fileContent, setFileContent] = useState('');
@@ -37,6 +37,16 @@ const ScreenA = () => {
         fileReader.onloadend = handleFileRead;
         fileReader.readAsText(file);
     };
+
+    function handleOnDragEnd(result) {
+        if (!result.destination) return;
+
+        const items = Array.from(results);
+        const [reorderedItem] = items.splice(result.source.index, 1);
+        items.splice(result.destination.index, 0, reorderedItem);
+
+        setResults(items);
+    }
     return (
         <div className="screen-container">
             <div className="results-container p-2">
@@ -44,13 +54,13 @@ const ScreenA = () => {
 
                 <div className="results mt-3">
 
-                    <DragDropContext>
+                    <DragDropContext onDragEnd={handleOnDragEnd}>
                         <Droppable droppableId="characters">
                             {(provided => (
                                 <div className="characters" {...provided.droppableProps}
                                     ref={provided.innerRef}>
                                     {
-                                        [1, 2, 3, 4, 5, 6].map((result, index) => <Draggable key={index + 1}
+                                        results.map((result, index) => <Draggable key={index + 1}
                                             draggableId={`${index}-1`} index={index}
                                         >
                                             {(provided) => (
