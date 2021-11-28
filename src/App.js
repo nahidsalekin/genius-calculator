@@ -4,7 +4,7 @@ import Home from './Pages/Home/Home';
 
 function App() {
   return (
-    <div className="p-3">
+    <div className="px-3">
       <BrowserRouter>
         <Routes>
           <Route exact path="/" element={<Home />} />

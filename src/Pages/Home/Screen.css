@@ -1,7 +1,3 @@
-body {
-    overflow: hidden;
-}
-
 .screen-container {
     width: 400px;
     height: 600px;
@@ -10,7 +6,7 @@ body {
 }
 
 .screens {
-    transform: scale(0.8);
+    transform: scale(0.9);
 }
 
 .results-container {

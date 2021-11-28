@@ -2,6 +2,8 @@ import '../Screen.css'
 import React, { useEffect, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { BsCardImage } from "react-icons/bs";
+import swal from 'sweetalert';
+
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 const ScreenA = ({ results, setResults, setContent, handleShow }) => {
@@ -24,29 +26,39 @@ const ScreenA = ({ results, setResults, setContent, handleShow }) => {
     const handleSubmission = e => {
         e.preventDefault();
 
-        //wait few moments for calculation
-        setProcessing(true);
-
-        let calculatedResult = !!((calculateInput(fileContent)) % 1) ?
-            calculateInput(fileContent).toPrecision(3) : calculateInput(fileContent);
-        const newInput = { title: calcTitle, result: calculatedResult, input: fileContent };
-        setResults([...results, newInput])
-        e.target.reset();
-        setFileName('');
-
-        fetch('http://localhost:5000/results', {
-            method: 'POST',
-            headers: {
-                'content-type': 'application/json'
-            },
-            body: JSON.stringify({ result: newInput })
-        })
-            .then(res => res.json())
-            .then(data => {
-                console.log(data);
-                wait(6000);
-                setProcessing(false);
+        if (/[^0-9-+*/.]/.test(fileContent)) {
+            swal({
+                title: "Invalid File!",
+                text: "Choose a valid .txt file. Allowed Characters: [0-9, +, -, *, /]",
+                icon: "error",
             });
+        }
+        else {
+            //wait few moments for calculation
+            setProcessing(true);
+
+            let calculatedResult = !!((calculateInput(fileContent)) % 1) ?
+                calculateInput(fileContent).toPrecision(3) : calculateInput(fileContent);
+            const newInput = { title: calcTitle, result: calculatedResult, input: fileContent };
+            setResults([...results, newInput])
+            e.target.reset();
+            setFileName('');
+
+            fetch('http://localhost:5000/results', {
+                method: 'POST',
+                headers: {
+                    'content-type': 'application/json'
+                },
+                body: JSON.stringify({ result: newInput })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    console.log(data);
+                    wait(6000);
+                    setProcessing(false);
+                });
+        }
+
     }
 
     const wait = (ms) => {
