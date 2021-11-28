@@ -1,26 +1,60 @@
 import '../Screen.css'
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { BsCardImage } from "react-icons/bs";
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
+const ScreenA = ({ results, setResults, setContent, handleShow }) => {
 
-const ScreenA = ({ setContent, handleShow }) => {
-    const [results, setResults] = useState([]);
-    const { acceptedFiles, getRootProps, getInputProps } = useDropzone();
+    const { getRootProps, getInputProps } = useDropzone();
     const [calcTitle, setCalcTitle] = useState('');
     const [fileContent, setFileContent] = useState('');
     const [fileName, setFileName] = useState('');
+    const [processing, setProcessing] = useState(false);
+
+    useEffect(() => {
+        fetch('http://localhost:5000/results')
+            .then(res => res.json())
+            .then(data => setResults(data.allResults))
+    }, [])
 
     function calculateInput(fn) {
         return new Function('return ' + fn)();
     }
     const handleSubmission = e => {
         e.preventDefault();
-        const newInput = { title: calcTitle, result: calculateInput(fileContent), input: fileContent };
+
+        //wait few moments for calculation
+        setProcessing(true);
+
+        let calculatedResult = !!((calculateInput(fileContent)) % 1) ?
+            calculateInput(fileContent).toPrecision(3) : calculateInput(fileContent);
+        const newInput = { title: calcTitle, result: calculatedResult, input: fileContent };
         setResults([...results, newInput])
         e.target.reset();
-        setFileName('')
+        setFileName('');
+
+        fetch('http://localhost:5000/results', {
+            method: 'POST',
+            headers: {
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify({ result: newInput })
+        })
+            .then(res => res.json())
+            .then(data => {
+                console.log(data);
+                wait(6000);
+                setProcessing(false);
+            });
+    }
+
+    const wait = (ms) => {
+        var start = new Date().getTime();
+        var end = start;
+        while (end < start + ms) {
+            end = new Date().getTime();
+        }
     }
     let fileReader;
 
@@ -42,18 +76,29 @@ const ScreenA = ({ setContent, handleShow }) => {
         const [reorderedItem] = items.splice(result.source.index, 1);
         items.splice(result.destination.index, 0, reorderedItem);
         setResults(items);
+
+        fetch('http://localhost:5000/results', {
+            method: 'PUT',
+            headers: {
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify({ results: items })
+        })
+            .then(res => res.json())
+            .then(data => console.log(data));
+
     }
     const showInput = inputContent => {
         setContent(inputContent);
         handleShow();
     }
+
     return (
         <div className="screen-container">
-            <div className="results-container p-2">
+            <div className="results-container screen-a p-2">
                 <h5 className="fw-bold">Total Results: {results.length}</h5>
 
                 <div className="results mt-3">
-
                     <DragDropContext onDragEnd={handleOnDragEnd}>
                         <Droppable droppableId="characters">
                             {(provided => (
@@ -76,17 +121,14 @@ const ScreenA = ({ setContent, handleShow }) => {
                                                     <button className="btn rounded-pill px-4"
                                                         onClick={() => showInput(result.input)}>See Input</button>
                                                 </div>
-                                            )
-                                            }
+                                            )}
                                         </Draggable>)
                                     }
                                 </div>
                             )
                             )}
                         </Droppable>
-
                     </DragDropContext>
-
                 </div>
 
             </div>
@@ -113,7 +155,11 @@ const ScreenA = ({ setContent, handleShow }) => {
                             <ul>{fileName}</ul>
                         }
                     </div>
-                    <button type="submit" className="my-2 btn rounded-pill">Calculate</button>
+                    {processing ?
+                        <div className="my-2">Calculating. Please Wait...</div>
+                        :
+                        <button type="submit" className="my-2 btn rounded-pill">Calculate</button>
+                    }
                 </form>
 
             </div>

@@ -1,19 +1,33 @@
+body {
+    overflow: hidden;
+}
+
 .screen-container {
     width: 400px;
     height: 600px;
     border: 2px solid;
     background-color: gainsboro;
-    transform: scale(0.9);
+}
+
+.screens {
+    transform: scale(0.8);
 }
 
 .results-container {
-    height: 60%;
-    border-bottom: 2px solid;
     overflow-y: scroll;
-    scrollbar-color: #ffffff;
+    scrollbar-color: #ffffff black;
     scrollbar-width: thin;
     -webkit-scrollbar-color: #ffffff;
     -webkit-scrollbar-width: thin;
+}
+
+.results-container.screen-a {
+    height: 60%;
+    border-bottom: 2px solid;
+}
+
+.results-container.screen-b {
+    height: 100%
 }
 
 .results-container::-webkit-scrollbar {
@@ -26,10 +40,8 @@
 }
 
 .results-container::-webkit-scrollbar-thumb {
-    box-shadow: inset 0 0 6px rgba(66, 59, 59, 0.3);
-    min-height: 10px;
-    border-radius: 10px;
-    background-color: white;
+    background-color: rgb(255, 255, 255);
+    border-radius: 5px;
 }
 
 .result {
