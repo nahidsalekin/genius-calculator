@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { BsCardImage } from "react-icons/bs";
 import swal from 'sweetalert';
+import { TaskTimer } from 'tasktimer';
 
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
@@ -13,6 +14,7 @@ const ScreenA = ({ results, setResults, setContent, handleShow }) => {
     const [fileContent, setFileContent] = useState('');
     const [fileName, setFileName] = useState('');
     const [processing, setProcessing] = useState(false);
+    const [remaining, setRemaining] = useState(6);
 
     useEffect(() => {
         fetch('http://localhost:5000/results')
@@ -34,40 +36,49 @@ const ScreenA = ({ results, setResults, setContent, handleShow }) => {
             });
         }
         else {
+
+            // defining timer with 1s as base interval
+            const timer = new TaskTimer(1000);
+
+            timer.on('tick', () => {
+                if (timer.tickCount > 5) {  //execute each task within 6s. 10 tasks per 60s
+                    setProcessing(false);
+                    startProcessing();
+                    timer.stop();
+                }
+                setRemaining(remaining - timer.tickCount)
+                console.log(`Remaining time to finish: ${remaining}s`)
+            });
+
+            timer.start();
             //wait few moments for calculation
             setProcessing(true);
 
-            let calculatedResult = !!((calculateInput(fileContent)) % 1) ?
-                calculateInput(fileContent).toPrecision(3) : calculateInput(fileContent);
-            const newInput = { title: calcTitle, result: calculatedResult, input: fileContent };
-            setResults([...results, newInput])
-            e.target.reset();
-            setFileName('');
+            const startProcessing = () => {
+                //if result is fraction value then set precision on it
+                let calculatedResult = !!((calculateInput(fileContent)) % 1) ?
+                    calculateInput(fileContent).toPrecision(3) : calculateInput(fileContent);
+                const newInput = { title: calcTitle, result: calculatedResult, input: fileContent };
+                setResults([...results, newInput])
+                e.target.reset();
+                setFileName('');
 
-            fetch('http://localhost:5000/results', {
-                method: 'POST',
-                headers: {
-                    'content-type': 'application/json'
-                },
-                body: JSON.stringify({ result: newInput })
-            })
-                .then(res => res.json())
-                .then(data => {
-                    console.log(data);
-                    wait(6000);
-                    setProcessing(false);
-                });
+                fetch('http://localhost:5000/results', {
+                    method: 'POST',
+                    headers: {
+                        'content-type': 'application/json'
+                    },
+                    body: JSON.stringify({ result: newInput })
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        console.log(data);
+                    });
+            }
         }
 
     }
 
-    const wait = (ms) => {
-        var start = new Date().getTime();
-        var end = start;
-        while (end < start + ms) {
-            end = new Date().getTime();
-        }
-    }
     let fileReader;
 
     const handleFileRead = (e) => {
@@ -89,6 +100,7 @@ const ScreenA = ({ results, setResults, setContent, handleShow }) => {
         items.splice(result.destination.index, 0, reorderedItem);
         setResults(items);
 
+        //update db collection for every reordering
         fetch('http://localhost:5000/results', {
             method: 'PUT',
             headers: {
@@ -162,13 +174,13 @@ const ScreenA = ({ results, setResults, setContent, handleShow }) => {
                             <p className="text-center">
                                 <BsCardImage />
                                 <br />
-                                Drop your calculation text file here</p>
+                                Upload your calculation text file here</p>
                             :
                             <ul>{fileName}</ul>
                         }
                     </div>
                     {processing ?
-                        <div className="my-2">Calculating. Please Wait...</div>
+                        <div className="my-2">Calculating. Please Wait <strong>{remaining}sec.</strong></div>
                         :
                         <button type="submit" className="my-2 btn rounded-pill">Calculate</button>
                     }
