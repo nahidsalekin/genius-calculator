@@ -47,7 +47,6 @@ const ScreenA = ({ results, setResults, setContent, handleShow }) => {
                     timer.stop();
                 }
                 setRemaining(remaining - timer.tickCount)
-                console.log(`Remaining time to finish: ${remaining}s`)
             });
 
             timer.start();
@@ -73,6 +72,7 @@ const ScreenA = ({ results, setResults, setContent, handleShow }) => {
                     .then(res => res.json())
                     .then(data => {
                         console.log(data);
+                        setRemaining(6);
                     });
             }
         }
