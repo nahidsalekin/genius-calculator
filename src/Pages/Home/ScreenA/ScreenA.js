@@ -39,6 +39,9 @@ const ScreenA = ({ results, setResults, setContent, handleShow, socket, processi
             else {
                 setProcessing(true);
                 socket.emit("calculate", { title: calcTitle, input: fileContent });
+                e.target.reset();
+                setFileName('');
+                setFileContent('');
             }
         }
     }

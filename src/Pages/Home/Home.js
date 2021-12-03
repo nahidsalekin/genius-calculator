@@ -7,7 +7,7 @@ import ProgressModal from './ProgressModal/ProgressModal';
 import { useLocation } from 'react-router';
 import { Link } from 'react-router-dom';
 
-const ENDPOINT = "http://localhost:5000";
+const ENDPOINT = "https://frozen-island-64039.herokuapp.com";
 
 const Home = () => {
     let location = useLocation();
@@ -22,7 +22,7 @@ const Home = () => {
     const [processing, setProcessing] = useState(false);
 
     const getData = () => {
-        fetch('http://localhost:5000/results')
+        fetch('https://frozen-island-64039.herokuapp.com/results')
             .then(res => res.json())
             .then(data => {
                 setResults(data.allResults);
