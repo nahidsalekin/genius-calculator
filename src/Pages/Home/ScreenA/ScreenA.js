@@ -6,7 +6,8 @@ import swal from 'sweetalert';
 
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
-const ScreenA = ({ results, setResults, setContent, handleShow, socket, processing, setProcessing, setUpdating }) => {
+const ScreenA = ({ results, setResults, setContent, handleShow, socket,
+    processing, setProcessing, setUpdating }) => {
 
     const { acceptedFiles, getRootProps, getInputProps } = useDropzone();
     const [calcTitle, setCalcTitle] = useState('');
@@ -16,7 +17,11 @@ const ScreenA = ({ results, setResults, setContent, handleShow, socket, processi
     useEffect(() => {
         if (acceptedFiles[0])
             handleFileChosen(acceptedFiles[0])
-    }, [acceptedFiles])
+    }, [acceptedFiles]);
+
+    function calculateInput(fn) {
+        return new Function('return ' + fn)();
+    }
 
     const handleSubmission = e => {
         e.preventDefault();
@@ -28,7 +33,7 @@ const ScreenA = ({ results, setResults, setContent, handleShow, socket, processi
             });
         }
         else {
-            if (/[^0-9-+*/.]/.test(fileContent) || fileContent === '' ||
+            if (/[^0-9-+*/.]/.test(fileContent) ||
                 ! /(?:(?:^|[-+_*/])(?:\s*-?\d+(\.\d+)?(?:[eE][+-]?\d+)?\s*))+$/.test(fileContent)) {
                 swal({
                     title: "Invalid File!",
@@ -37,11 +42,21 @@ const ScreenA = ({ results, setResults, setContent, handleShow, socket, processi
                 });
             }
             else {
-                setProcessing(true);
-                socket.emit("calculate", { title: calcTitle, input: fileContent });
-                e.target.reset();
-                setFileName('');
-                setFileContent('');
+                try {
+                    calculateInput(fileContent);
+                    setProcessing(true);
+                    socket.emit("calculate", { title: calcTitle, input: fileContent });
+                    e.target.reset();
+                    setFileName('');
+                    setFileContent('');
+                }
+                catch {
+                    swal({
+                        title: "Invalid Expression!",
+                        text: "Upload/Drop a .txt file with valid expression.",
+                    });
+                }
+
             }
         }
     }
@@ -139,7 +154,7 @@ const ScreenA = ({ results, setResults, setContent, handleShow, socket, processi
                         }
                     </div>
                     {processing ?
-                        <div className="my-2"> Please Wait. <strong>Calculating...</strong></div>
+                        <div className="my-2"> Please Wait 15s. <strong>Calculating...</strong></div>
                         :
                         <button type="submit" className="my-2 btn rounded-pill">Calculate</button>
                     }

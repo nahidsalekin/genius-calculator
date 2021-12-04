@@ -6,7 +6,7 @@ const ScreenB = ({ setContent, handleShow, results }) => {
     const [hasMore, sethasMore] = useState(true);
     const [page, setPage] = useState(7);
     const [data, setData] = useState([]);
-    console.log(results);
+
     useEffect(() => {
         if (results.length > 6)
             setData([...results.slice(0, page)]);

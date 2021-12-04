@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './App.css';
 import Home from './Pages/Home/Home';
-import ScreenB from './Pages/Home/ScreenB/ScreenB';
 
 function App() {
   return (

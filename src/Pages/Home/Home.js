@@ -6,8 +6,9 @@ import socketIOClient from "socket.io-client";
 import ProgressModal from './ProgressModal/ProgressModal';
 import { useLocation } from 'react-router';
 import { Link } from 'react-router-dom';
+import swal from 'sweetalert';
 
-const ENDPOINT = "https://frozen-island-64039.herokuapp.com";
+const ENDPOINT = "http://localhost:5000";
 
 const Home = () => {
     let location = useLocation();
@@ -21,21 +22,21 @@ const Home = () => {
 
     const [processing, setProcessing] = useState(false);
 
-    const getData = () => {
-        fetch('https://frozen-island-64039.herokuapp.com/results')
-            .then(res => res.json())
-            .then(data => {
-                setResults(data.allResults);
-            });
-    }
     useEffect(() => {
         socket.on('connection', () => {
-            console.log(`I'm connected with the back-end`);
-            getData();
+            console.log('Connected...');
+
+            fetch('http://localhost:5000/results')
+                .then(res => res.json())
+                .then(data => {
+                    setResults(data.allResults);
+                });
         });
 
         socket.on('result', (data) => {
-            setResults(results => [...results, data]);
+            if (data.status === 'ok') {
+                setResults(results => [...results, data.result]);
+            }
             setProcessing(false);
         });
 
