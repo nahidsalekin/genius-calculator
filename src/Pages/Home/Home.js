@@ -6,7 +6,6 @@ import socketIOClient from "socket.io-client";
 import ProgressModal from './ProgressModal/ProgressModal';
 import { useLocation } from 'react-router';
 import { Link } from 'react-router-dom';
-import swal from 'sweetalert';
 
 const ENDPOINT = "http://localhost:5000";
 
